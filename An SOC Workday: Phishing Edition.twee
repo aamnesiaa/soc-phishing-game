@@ -1,0 +1,1627 @@
+:: StoryTitle
+An SOC Workday: Phishing Edition
+
+
+:: StoryData
+{
+  "ifid": "F6B3C152-9D2E-4C1D-BF30-SECOPS-PHISHING-SIM",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "Start",
+  "zoom": 1
+}
+
+
+:: About {"position":"0,100","size":"100,100"}
+''An SOC Workday: Phishing Edition''
+
+Release: v1.0
+
+A narrative simulation about:
+
+* Developing judgement around ''Inspect ➝ Verify ➝ Act''  
+* Balancing ''speed, certainty, and disruption''  
+* Seeing how small choices ripple into end-of-day outcomes
+
+Designed by:
+
+* Matthew Viray  
+* Swathi Veerapalli  
+
+This release is designed for student and early-career analysts to experience an SOC workday infested with phishing.
+
+[[Back to main menu->Start]]
+
+
+:: Consent and Data Notice {"position":"600,100","size":"100,100"}
+<<include "HUD">>
+
+You are about to start ''"An SOC Workday: Phishing Edition"'', a day-in-the-life simulation of a corporate security analyst.
+
+This prototype can log *only* your in-game choices (no names, no emails, no identifiers) to help researchers understand how people reason about phishing.
+
+* Playing is voluntary.  
+* You may stop at any time.  
+* Your choices will be anonymized if you consent.  
+
+Do you consent to have your anonymized in-game decisions stored for research?
+
+<<link "I consent and want to play.">>
+	<<set $consentGiven = true>>
+	<<goto "Onboarding and Tutorial">>
+<</link>>
+
+<<link "I prefer to play without contributing data (still play).">>
+	<<set $consentGiven = false>>
+	<<goto "Onboarding and Tutorial">>
+<</link>>
+
+<<link "Exit the simulation.">>
+	You close the laptop and skip today’s simulation.
+	<<goto "End of Day Debrief">>
+<</link>>
+
+
+:: Containment Actions {"position":"600,300","size":"100,100"}
+<<include "HUD">>
+
+Based on what you know, you must choose how to act.
+
+For each scenario, you can broadly ''Contain'', ''Proceed/Monitor'', or ''Communicate''.
+
+<<switch $case>>
+
+<<case "vip">>
+''VIP travel scenario: pick an action''
+
+<<link "block the sending domain, mark similar messages as high-risk, and brief the assistant to ignore it">>
+	<<set $time -= 8>>
+	<<set $risk -= 20>>
+	<<set $evidence += 5>>
+	<<set $trust -= 5>>
+	<<set $vipDone = true>>
+	<<set $decisions.push("VIP: Contained spoof, blocked domain, educated assistant.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Proceed: send backup codes / reset via the link in the email to help the CFO quickly">>
+	<<set $time -= 2>>
+	<<set $risk += 25>>
+	<<set $evidence -= 5>>
+	<<set $trust += 3>>
+	<<set $vipDone = true>>
+	<<set $decisions.push("VIP: Trusted spoofed email and helped attacker.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Communicate carefully: block the domain, send a clear note to the CFO + assistant via official channels explaining the phish">>
+	<<set $time -= 10>>
+	<<set $risk -= 18>>
+	<<set $evidence += 8>>
+	<<set $trust -= 2>>
+	<<set $vipDone = true>>
+	<<set $statusContext = "vip">>
+	<<set $decisions.push("VIP: Contained and clearly communicated to VIP team.")>>
+	<<goto "Status Update Composer">>
+<</link>>
+
+
+
+<<case "wifi">>
+''Public Wi-Fi credential harvest: pick an action''
+
+<<link "Contain: force password reset, revoke active sessions, and open a short incident ticket">>
+	<<set $time -= 8>>
+	<<set $risk -= 18>>
+	<<set $evidence += 6>>
+	<<set $trust -= 3>>
+	<<set $wifiDone = true>>
+	<<set $decisions.push("Wi-Fi: Forced reset and revoked sessions after suspected credential theft.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Proceed with monitoring only: watch for unusual logins but don’t reset credentials yet">>
+	<<set $time -= 3>>
+	<<set $risk += 10>>
+	<<set $evidence += 2>>
+	<<set $trust += 2>>
+	<<set $wifiDone = true>>
+	<<set $decisions.push("Wi-Fi: Chose monitoring only, no immediate reset.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Communicate: reset credentials and send a concise advisory to the user and their manager about public Wi-Fi risk">>
+	<<set $time -= 10>>
+	<<set $risk -= 16>>
+	<<set $evidence += 5>>
+	<<set $trust -= 1>>
+	<<set $wifiDone = true>>
+	<<set $statusContext = "wifi">>
+	<<set $decisions.push("Wi-Fi: Reset + educational advisory to user/manager.")>>
+	<<goto "Status Update Composer">>
+<</link>>
+
+
+
+<<case "mfa">>
+''MFA push exhaustion: pick an action''
+
+<<link "Contain: temporarily disable the account, require password reset, and investigate related logins">>
+	<<set $time -= 9>>
+	<<set $risk -= 20>>
+	<<set $evidence += 7>>
+	<<set $trust -= 4>>
+	<<set $mfaDone = true>>
+	<<set $decisions.push("MFA: Disabled account and reset after push fatigue attack.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Under-react: tell the user to approve one prompt to 'clear the queue'">>
+	<<set $time -= 1>>
+	<<set $risk += 30>>
+	<<set $evidence -= 5>>
+	<<set $trust += 3>>
+	<<set $mfaDone = true>>
+	<<set $decisions.push("MFA: Told user to approve unknown prompt, enabling attacker.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Communicate + partial contain: keep MFA active but add IP blocks and send a clear warning to the engineer and identity team">>
+	<<set $time -= 8>>
+	<<set $risk -= 10>>
+	<<set $evidence += 4>>
+	<<set $trust -= 1>>
+	<<set $mfaDone = true>>
+	<<set $statusContext = "mfa">>
+	<<set $decisions.push("MFA: Adjusted controls and warned engineer + identity team.")>>
+	<<goto "Status Update Composer">>
+<</link>>
+
+
+
+<<case "vendor">>
+''Vendor bank change: pick an action''
+
+<<link "Contain: block the suspicious domain, warn Finance, and mark the message as confirmed fraud">>
+	<<set $time -= 9>>
+	<<set $risk -= 22>>
+	<<set $evidence += 7>>
+	<<set $trust -= 3>>
+	<<set $vendorDone = true>>
+	<<set $decisions.push("Vendor: Blocked spoof and prevented fraudulent bank change.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Proceed: allow Finance to update banking details based on this email">>
+	<<set $time -= 2>>
+	<<set $risk += 35>>
+	<<set $evidence -= 8>>
+	<<set $trust += 4>>
+	<<set $vendorDone = true>>
+	<<set $decisions.push("Vendor: Approved fraudulent banking change.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Communicate: coordinate with Finance and the real vendor contact before the wire run, and issue guidance on bank-change verification">>
+	<<set $time -= 12>>
+	<<set $risk -= 20>>
+	<<set $evidence += 9>>
+	<<set $trust -= 2>>
+	<<set $vendorDone = true>>
+	<<set $statusContext = "vendor">>
+	<<set $decisions.push("Vendor: Verified out-of-band and sent guidance to Finance.")>>
+	<<goto "Status Update Composer">>
+<</link>>
+
+
+
+<<case "wave">>
+''Phishing wave: pick an action''
+
+<<link "create mail rules to quarantine the campaign, block the malicious domain, and start takedown">>
+	<<set $time -= 12>>
+	<<set $risk -= 25>>
+	<<set $evidence += 8>>
+	<<set $trust -= 6>>
+	<<set $waveDone = true>>
+	<<set $decisions.push("Wave: Quarantined campaign, blocked domain, initiated takedown.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Under-react: assume endpoint controls are enough, take no broad action">>
+	<<set $time -= 2>>
+	<<set $risk += 18>>
+	<<set $evidence += 1>>
+	<<set $trust += 3>>
+	<<set $waveDone = true>>
+    <<set $decisions.push("Wave: Took no broad action and relied on endpoint controls only.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Contain + communicate: quarantine and block, plus send an org-wide notice explaining how to recognize and report this phish">>
+	<<set $time -= 15>>
+	<<set $risk -= 22>>
+	<<set $evidence += 10>>
+	<<set $trust -= 4>>
+	<<set $waveDone = true>>
+	<<set $statusContext = "wave">>
+	<<set $decisions.push("Wave: Blocked campaign and sent org-wide notice.")>>
+	<<goto "Status Update Composer">>
+<</link>>
+
+
+
+<<case "training">>
+''Training campaign side quest: pick an action''
+
+<<link "Analyze correlation with today’s incidents and share a short note with awareness team">>
+	<<set $time -= 6>>
+	<<set $evidence += 10>>
+	<<set $trust += 1>>
+	<<set $trainingDone = true>>
+	<<set $decisions.push("Training: Looked at campaign metrics to correlate with real phish.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Ignore for now and tell the awareness team you’re too busy">>
+	<<set $time -= 1>>
+	<<set $trust -= 1>>
+	<<set $trainingDone = true>>
+	<<set $decisions.push("Training: Skipped correlating training with incidents.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+
+<<case "chat">>
+''Helpdesk chat: pick an action''
+
+<<link "Contain: tell IT helpdesk to deny the request and require a proper ticket with manager approval">>
+	<<set $time -= 6>>
+	<<set $risk -= 15>>
+	<<set $evidence += 4>>
+	<<set $trust -= 2>>
+	<<set $chatDone = true>>
+	<<set $decisions.push("Chat: Backed process, denied privileged access without proper approvals.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Proceed: advise helpdesk to add the device now and 'clean up' approvals later">>
+	<<set $time -= 2>>
+	<<set $risk += 15>>
+	<<set $evidence += 0>>
+	<<set $trust += 2>>
+	<<set $chatDone = true>>
+    <<set $decisions.push("Chat: Allowed privileged access based on chat alone and planned to fix approvals later.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Communicate carefully: coach IT to hold the request, verify the employee and manager via directory, then proceed if legit">>
+	<<set $time -= 7>>
+	<<set $risk -= 8>>
+	<<set $evidence += 5>>
+	<<set $trust += 1>>
+	<<set $chatDone = true>>
+	<<set $decisions.push("Chat: Guided IT to verify identity and approvals before making changes.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+<<case "oauth">>
+''OAuth consent: pick an action''
+
+<<link "revoke the Helios app tenant-wide and alert the engineer’s manager">>
+	<<set $time -= 8>>
+	<<set $risk -= 18>>
+	<<set $evidence += 6>>
+	<<set $trust -= 3>>
+	<<set $oauthDone = true>>
+	<<set $decisions.push("OAuth: Revoked risky third-party app and notified stakeholders.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Proceed / Monitor: leave the app in place but enable extra logging and set a short review date">>
+	<<set $time -= 5>>
+	<<set $risk -= 5>>
+	<<set $evidence += 3>>
+	<<set $trust += 1>>
+	<<set $oauthDone = true>>
+	<<set $decisions.push("OAuth: Accepted app with monitoring and follow-up review.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Downplay: treat the app as harmless productivity tooling and take no action">>
+	<<set $time -= 1>>
+	<<set $risk += 10>>
+	<<set $evidence += 0>>
+	<<set $trust += 2>>
+	<<set $oauthDone = true>>
+	<<set $decisions.push("OAuth: Chose not to intervene on broad-scoped app.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+<</switch>>
+
+
+:: End of Day Debrief {"position":"1400,300","size":"100,100"}
+<<include "HUD">>
+
+<<set $risk = Math.max(0, $risk)>>
+<<set $evidence = Math.max(0, $evidence)>>
+<<set $trust = Math.max(0, $trust)>>
+<<set $time = Math.max(0, $time)>>
+
+<<if $risk <= 20 and $evidence >= 60 and $trust >= 60>>
+	<<set $endingType = "Solid Containment">>
+<<elseif $risk <= 50>>
+	<<set $endingType = "Visible Containment">>
+<<else>>
+	<<set $endingType = "Breached">>
+<</if>>
+
+You close your laptop and look back over the day.
+
+''Ending type:'' //<<print $endingType>>//
+
+<<if $endingType == "Solid Containment">>
+You managed to ''contain the phishing campaigns'' with minimal disruption.  
+You inspected carefully, verified through trusted channels, and communicated clearly.  
+Some people noticed extra friction, but overall trust in security ''increased''.
+
+<</if>>
+
+<<if $endingType == "Visible Containment">>
+You contained most threats, but it was ''messy''.
+
+A mix of strong and weak decisions left some residual risk or unnecessary disruption.  
+Stakeholders saw security working hard, but also felt friction and confusion at times.
+
+<</if>>
+
+<<if $endingType == "Breached">>
+Today’s decisions led to a ''likely compromise'' or major near-miss.
+
+Shortcuts (skipping verification, approving unknown MFA prompts, trusting bank-change emails) allowed attackers closer than they should’ve been.  
+Retracing your steps, you see where ''inspect and verify'' could have changed the outcome.
+
+<</if>>
+
+<div class="debrief-metrics">
+	<div class="metric-card metric-risk">
+		<div class="metric-label">Risk (lower is better)</div>
+		<div class="metric-value"><<print $risk>></div>
+	</div>
+	<div class="metric-card metric-evidence">
+		<div class="metric-label">Evidence Collected</div>
+		<div class="metric-value"><<print $evidence>></div>
+	</div>
+	<div class="metric-card metric-trust">
+		<div class="metric-label">Stakeholder Trust</div>
+		<div class="metric-value"><<print $trust>></div>
+	</div>
+	<div class="metric-card metric-time">
+		<div class="metric-label">Time Left in Day</div>
+		<div class="metric-value"><<print $time>></div>
+	</div>
+</div>
+
+### Key decisions
+
+<<if $decisions.length > 0>>
+	<<print "* " + $decisions.join("\n* ")>>
+<<else>>
+	* You rushed through the day with few documented decisions.
+<</if>>
+
+[[View researcher export summary->Researcher Export]]
+
+[[Play again from the beginning->Start]]
+
+
+:: HUD [nobr] {"position":"400,100","size":"100,100"}
+<div class="hud">
+	<div class="hud-left">
+		<span class="icon">🛡️</span>
+		<span>SOC Workday · Phishing Edition</span>
+	</div>
+	<div class="hud-right">
+		<span class="pill pill-time" title="Remaining time in your shift">
+			⏱ <strong>Time</strong> <<print $time>>
+		</span>
+		<span class="pill pill-risk" title="Lower is better">
+			⚠ <strong>Risk</strong> <<print $risk>>
+		</span>
+		<span class="pill pill-evidence" title="Higher is better">
+			📂 <strong>Evidence</strong> <<print $evidence>>
+		</span>
+		<span class="pill pill-trust" title="Stakeholder trust vs. disruption">
+			🤝 <strong>Trust</strong> <<print $trust>>
+		</span>
+	</div>
+</div>
+
+
+:: Handoff and Notes {"position":"1175,300","size":"100,100"}
+<<include "HUD">>
+
+The day is nearly over. Before you log off, you capture ''handoff notes'' for the next analyst and future you.
+
+What do you emphasize?
+
+<<link "Emphasize key evidence collected (artifacts, logs, indicators).">>
+	<<set $time -= 4>>
+	<<set $evidence += 6>>
+	<<set $decisions.push("Handoff: Prioritized evidence and artifacts in notes.")>>
+	<<goto "End of Day Debrief">>
+<</link>>
+<br>
+
+<<link "Emphasize who needs follow-up communication (users, vendor, leadership).">>
+	<<set $time -= 3>>
+	<<set $trust += 3>>
+	<<set $decisions.push("Handoff: Focused notes on follow-up communication.")>>
+	<<goto "End of Day Debrief">>
+<</link>>
+<br>
+
+<<link "Leave minimal notes and assume someone will figure it out">>
+	<<set $time -= 1>>
+	<<set $evidence -= 4>>
+	<<set $trust -= 3>>
+	<<set $decisions.push("Handoff: Left poor notes for next shift.")>>
+	<<goto "End of Day Debrief">>
+<</link>>
+
+
+:: Inspect Headers, Links, Attachments {"position":"1400,100","size":"100,100"}
+<<include "HUD">>
+
+You pivot into ''detailed inspection'': headers, URLs, attachments, and relevant logs.
+
+<<switch $case>>
+
+<<case "vip">>
+''VIP travel spoof: inspection clues''
+
+* The display name says `CFO - Mobile`, but the domain is `cont0so.com` (zero instead of "o").  
+* `Reply-To` points to a ''free webmail account''.  
+* SPF is pass, but DMARC is ''fail'', and this pattern matches prior ''targeted phishing'' to executives.  
+* The password reset link goes to `secure-okta.cont0so-support.com`.
+
+You can dig deeper, verify, or act.
+
+
+
+<<case "wifi">>
+''Public Wi-Fi sign-in: inspection clues''
+
+* Sign-in page was hosted at `login.contoso.com.hotel-checkin.net`.  
+* Browser extension flagged ''mixed content'' and a ''self-signed certificate'' on first load.  
+* Identity logs show the user authenticated once from the hotel IP, and a new device cookie appeared right after.  
+
+
+
+<<case "mfa">>
+''MFA push: inspection clues''
+
+* Identity logs show ''many failed pushes'' to the engineer’s device from a new geolocation.  
+* A corresponding username/password attempt originated from an IP block that appears on a ''threat-intel watchlist''.  
+
+You may want to view full MFA logs.
+
+
+
+<<case "vendor">>
+''Vendor bank change: inspection clues''
+
+* The sender domain is `acme-payments.co`, but the contract on file uses `acmepayments.com`.  
+* DKIM is pass, SPF is neutral. The message routed through a generic bulk email provider.  
+* The attached "new banking instructions" PDF was generated yesterday, with metadata that doesn’t match prior invoices.
+
+
+
+<<case "wave">>
+''Phishing wave: inspection clues''
+
+* The hyperlink text says `vpn-upgrade.contoso.com`, but the actual href is `https://vpn-upgrade.cont0so-support.com/install`.  
+* The domain was registered ''3 days ago'' with privacy-protected WHOIS.  
+* Multiple recipients report that their AV blocked a download from that domain.
+
+
+
+<<case "training">>
+''Training side quest: inspection clues''
+
+The awareness dashboard shows:
+
+* Departments with ''higher training click rates'' are over-represented in today’s real phish reports.  
+* Several users who reported the training phish also reported the real VPN upgrade phish quickly.
+
+This suggests training performance may correlate with real-world reporting.
+
+
+
+
+<<case "chat">>
+''Helpdesk chat: inspection clues''
+
+* The user joined the workspace very recently and appears as a ''guest'' account.
+* No ticket number is provided despite a request for ''privileged group'' access.
+* Directory lookup shows ''no manager'' on file for the claimed identity.
+* Tone is ''urgent'' and asks to bypass normal access-request workflow.
+
+You can advise the helpdesk to ''insist on the normal process'', escalate to security, or treat this as
+a false alarm and let them proceed.
+
+
+
+<<case "oauth">>
+''OAuth consent: inspection clues''
+
+* The app is published by ''Helios Apps LLC'', not by your organization.
+* Requested scopes include ''read, compose, send, and delete email'', manage all files, and offline access.
+* Activity logs show the app was approved ''outside normal change windows''.
+* Other users in the tenant have ''not'' installed this app yet.
+
+You can recommend revoking the app immediately, monitoring it with additional logging, or accepting the risk
+if this aligns with a known business process.
+
+
+
+<</switch>>
+
+From here you can:
+
+<<if $case == "wifi" or $case == "vip" or $case == "vendor" or $case == "wave">>
+	<<link "Open Link Analyzer">>
+		<<set $time -= 3>>
+		<<set $evidence += 5>>
+		<<goto "Link Analyzer">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if $case == "vendor" or $case == "wave">>
+	<<link "Detonate attachment / payload in sandbox">>
+		<<set $time -= 4>>
+		<<set $evidence += 8>>
+		<<goto "Sandbox Result">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if $case == "mfa">>
+	<<link "Open MFA log viewer">>
+		<<set $time -= 3>>
+		<<set $evidence += 6>>
+		<<goto "MFA Log Viewer">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if $case != "training">>
+	<<link "Verify via trusted directory / contract">>
+		<<set $time -= 6>>
+		<<set $risk -= 8>>
+		<<set $evidence += 6>>
+		<<goto "Verify via Directory">>
+	<</link>>
+	<br>
+<</if>>
+
+<<link "Skip verification and act based on what you see (no extra time).">>
+	<<goto "Containment Actions">>
+<</link>>
+
+<br>
+
+<<link "Back to queue without taking action">>
+	<<set $time -= 1>>
+	<<set $risk += 2>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+:: Link Analyzer {"position":"1575,75","size":"100,100"}
+<<include "HUD">>
+
+You send the URL to the internal link analyzer.
+
+<<switch $case>>
+
+<<case "vip">>
+The ''VIP password reset link'' resolves to:
+
+`https://secure-okta.cont0so-support.com/login`
+
+* Domain is ''not'' in your corporate allow-list.  
+* TLS cert is issued to an unrelated organization.  
+* The page visually mimics your real SSO portal but posts credentials to a different backend.
+
+This strongly suggests a ''phishing kit'' targeting your Okta login.
+
+
+
+<<case "wifi">>
+The hotel sign-in URL resolves to:
+
+`https://hotel-guest-login.com/contoso-portal`
+
+* The page pulls images from your real portal but sends form posts to an unknown endpoint.  
+* Some parameters include the user’s email and password, logged in plaintext in a test capture.
+
+Credentials may have been ''harvested''.
+
+
+
+<<case "vendor">>
+The "update banking" link in the email resolves to:
+
+`https://acme-payments-co.com/portal/login`
+
+* Newly registered domain, distinct from both contract and prior invoice links.  
+* Login form posts to an IP in a high-risk ASN.  
+
+Looks like a ''credential-stealing site'' impersonating your vendor portal.
+
+
+
+<<case "wave">>
+The VPN upgrade link resolves to:
+
+`https://vpn-upgrade.cont0so-support.com/install`
+
+* The page serves an unsigned executable flagged by multiple AV engines.  
+* Telemetry shows a few downloads, but execution was mostly blocked by endpoint controls.
+
+This confirms a ''phishing-delivered malware campaign''.
+
+
+
+<<case "training">>
+The training link is known good and hosted on the awareness vendor’s platform, so there’s nothing actionable here beyond learning.
+
+
+
+<</switch>>
+
+[[Back to inspection->Inspect Headers, Links, Attachments]]
+
+
+:: MFA Log Viewer {"position":"200,300","size":"100,100"}
+<<include "HUD">>
+
+<img src="images/mfa_phone_prompts.png" alt="Phone notification screen showing repeated Duo Mobile VPN approval prompts from an unknown location and IP" style="max-width:320px, border-radius:20px, margin:0.5rem 0 0.8rem,">
+
+You open detailed MFA logs for the engineer.
+
+* 24 push requests over 10 minutes, from an ''unfamiliar IP range''.  
+* Requests originated from an unusual country for this user.  
+* The engineer denied most prompts, and two are marked "no response."  
+* Immediately before the push storm, there was a ''successful username/password login'' from the same IP.
+
+This strongly suggests an attacker is attempting ''push fatigue'' to gain access.
+
+[[Back to inspection->Inspect Headers, Links, Attachments]]
+
+
+:: Message and Email View {"position":"1175,100","size":"100,100"}
+<<include "HUD">>
+
+<<switch $case>>
+
+<<case "vip">>
+<img src="images/vip_travel_email.png" alt="VIP travel phishing email as seen by the executive assistant" style="max-width:100%, border-radius:12px, margin:0.5rem 0 0.8rem,">
+''Queue item: VIP travel spoof (email to executive assistant)''
+
+*Sender*: `cfo-mobile@cont0so.com`  
+*Recipient*: Executive assistant to the CFO  
+*Subject*: `Need Okta help before I board`  
+
+The message claims the CFO is between flights and locked out of their account.  
+It includes a ''password reset link'' and asks the assistant to send ''backup codes by reply'' before boarding.
+
+The mail gateway gave it a ''medium suspicion'' score but allowed delivery because it targets a VIP.
+
+
+
+<<case "wifi">>
+<img src="images/public_wifi_portal.png" alt="Hotel guest Wi-Fi captive portal with embedded Contoso login form on a third-party domain" style="max-width:100%, border-radius:12px, margin:0.5rem 0 0.8rem,">
+''Queue item: Public Wi-Fi sign-in''
+
+Endpoint telemetry shows an employee logged into the corporate portal from a ''hotel Wi-Fi network''. A browser extension reported a ''sign-in page that looked slightly off'' before the user entered credentials.
+
+The employee filed a quick ticket:  
+> "Got a weird sign-in page at the hotel, but it looked close enough. I signed in and it worked. Just flagging in case."
+
+
+
+<<case "mfa">>
+''Queue item: MFA push exhaustion''
+
+Identity logs show ''dozens of push notifications'' sent to a senior engineer’s device over 10 minutes, mostly denied.
+
+The engineer opened a chat with the helpdesk:  
+> "My phone keeps getting Duo prompts for VPN sign-in. I’m not logging in. Should I just hit approve to make it stop?"
+
+
+
+<<case "vendor">>
+<img src="images/vendor_ticket.png" alt="Contoso Service Desk ticket showing Finance request to update Acme Payments banking details" style="max-width:100%, border-radius:12px, margin:0.5rem 0 0.8rem,">
+''Queue item: Vendor bank change request''
+
+Accounts Payable forwards an email chain:
+
+*From*: `billing@acme-payments.co`  
+*Subject*: `Updated banking details for next wire`  
+
+The vendor says they have switched to a new bank and have attached updated ''remittance instructions''. The email signature looks professional but uses a ''slightly different domain'' than your contract file.
+
+Finance asks:  
+> "Can we safely update banking details before this afternoon’s wire run?"
+
+
+
+<<case "wave">>
+''Queue item: Phishing wave / look-alike hyperlink''
+
+User reports spiked overnight. Multiple employees forwarded a message:
+
+*Subject*: `Security Upgrade - Mandatory VPN Client`  
+The email claims IT is rolling out a new VPN client and asks users to click `vpn-upgrade.contoso-support.com` to install it.
+
+Some users clicked but say the link ''"just spun"''. Others deleted it.
+
+
+
+<<case "training">>
+''Optional: Training campaign results'' <span class="tag">Side Quest</span>
+
+Awareness team ran a ''simulated phishing campaign'' overnight with a fake "package delivery" notice.
+
+A dashboard shows click and report rates by department. They’re asking whether today’s real alerts can be correlated with training performance.
+
+This side quest can boost your ''evidence'' and context but costs some time.
+
+
+
+
+<<case "chat">>
+<img src="images/it_helpdesk_chat.png" alt="Internal it-helpdesk chat with a suspicious new Finance employee asking for privileged access" style="max-width:100%, border-radius:12px, margin:0.5rem 0 0.8rem,">
+''Queue item: Helpdesk chat social-engineering attempt'' <span class="tag">Side Quest</span>
+
+In the ''#it-helpdesk'' channel, someone claiming to be a new Finance hire is asking for a device to be added
+to a ''privileged approval group'' without opening a formal request or having a manager listed in the directory.
+
+You can read through the chat transcript to spot clues about whether this is legitimate onboarding pain
+or a real-time social-engineering attempt to bypass access controls.
+
+
+
+<<case "oauth">>
+<img src="images/oauth_consent.png" alt="CloudID OAuth consent dialog requesting broad access to mail, files, and offline access" style="max-width:100%, border-radius:12px, margin:0.5rem 0 0.8rem,">
+''Queue item: OAuth app consent with broad scopes'' <span class="tag">Side Quest</span>
+
+An engineer clicked ''Accept'' on an OAuth consent prompt for an app called ''Helios CRM Assistant''. The app
+now has access to ''read, send, and delete mail'', manage files across company drives, and maintain offline access.
+
+Your identity team surfaced this as a potential risk and wants your recommendation on whether to ''revoke'' the app,
+''monitor'', or treat it as expected business usage.
+
+
+
+<</switch>>
+
+What do you do first?
+
+<<link "Inspect this item more closely">>
+	<<set $time -= 5>>
+	<<set $evidence += 5>>
+	<<goto "Inspect Headers, Links, Attachments">>
+<</link>>
+
+<br>
+
+<<link "Take a quick action without deep inspection">>
+	<<set $time -= 1>>
+	<<set $risk += 5>>
+	<<set $trust += 1>>
+	<<goto "Containment Actions">>
+<</link>>
+
+<br>
+
+<<link "Defer this item and go back to the queue">>
+	<<set $time -= 2>>
+	<<set $risk += 3>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+:: Morning Triage {"position":"975,100","size":"100,100"}
+<<include "HUD">>
+
+It’s 08:30. Coffee in hand, you open the SOC queue.  
+Several items are waiting, and you can choose the order.
+
+Select an item to work on:
+
+<<if not $vipDone>>
+	<<link "VIP travel: assistant received urgent account-recovery email for a traveling executive.">>
+		<<set $case = "vip">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if not $wifiDone>>
+<<link "Public Wi-Fi: sign-in alert from a hotel network, and an employee may have entered credentials on a spoofed page.">>
+		<<set $case = "wifi">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if not $mfaDone>>
+	<<link "MFA push exhaustion: engineer reports repeated MFA prompts they didn’t initiate.">>
+		<<set $case = "mfa">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if not $vendorDone>>
+	<<link "Vendor bank change: finance ticket about a supplier requesting new wire instructions.">>
+		<<set $case = "vendor">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if not $waveDone>>
+	<<link "Phishing wave: multiple users reported a look-alike hyperlink in a 'security upgrade' email.">>
+		<<set $case = "wave">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if not $trainingDone>>
+	<<link "(Optional side quest) Training campaign results: awareness team sent a simulated phish overnight.">>
+		<<set $case = "training">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if not $chatDone>>
+	<<link "(Optional side quest) Helpdesk chat: suspicious 'new Finance hire' asking for privileged access via chat.">>
+		<<set $case = "chat">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+<<if not $oauthDone>>
+	<<link "(Optional side quest) OAuth app consent: employee approved 'Helios CRM Assistant' with broad permissions.">>
+		<<set $case = "oauth">>
+		<<goto "Message and Email View">>
+	<</link>>
+	<br>
+<</if>>
+
+
+<<if $vipDone and $wifiDone and $mfaDone and $vendorDone and $waveDone and not $warRoomDone>>
+	<hr>
+	All major incidents for the day have been touched. It’s time to brief leadership.
+
+	[[Head to the incident war room->War Room Briefing]]
+<</if>>
+
+<<if $vipDone and $wifiDone and $mfaDone and $vendorDone and $waveDone and $warRoomDone>>
+	<hr>
+	Leadership has been briefed. All that remains is to capture handoff notes and reflect.
+
+	[[Write handoff notes and wrap up->Handoff and Notes]]
+<</if>>
+
+
+:: Onboarding and Tutorial {"position":"800,100","size":"100,100"}
+<<include "HUD">>
+
+You are an ''SOC analyst'' at a large company. Overnight, several security tools raised alerts and employees reported strange messages. Today, phishing risk is higher than usual.
+
+''Quick terms we will use''
+
+* ''Phishing'': fake messages (email, chat, or text) that try to trick you into clicking a bad link, sending money, or giving away passwords.  
+* ''Phishing wave'': a lot of phishing messages hitting many people in the company around the same time.  
+* ''MFA (multi factor authentication)'': an extra step to log in, like a code or app approval on your phone, in addition to your password.  
+* ''MFA push or phone prompt'': a notification on your phone asking you to approve a login. Attackers may spam these to wear people down.  
+* ''VPN'': a secure connection that lets you reach internal company systems when you are away from the office.  
+* ''SSO (single sign on)'': one main login page you use to sign in to many work apps.  
+* ''OAuth or app permissions screen'': a page that asks you to let an app access your email, files, or other data on your behalf.  
+
+You do not need to memorize every term. This is just a quick reference you can reread as you play.
+
+''Your tools''
+
+* ''Inspect'': look at headers, URLs, attachments, and logs.  
+* ''Verify'': reach out using ''trusted contact info'', like your directory or contractual contacts.  
+* ''Contain'': block senders, reset credentials, and quarantine mail.  
+* ''Proceed'': allow business as usual while you keep an eye on things.  
+* ''Communicate'': send short, clear updates to the right stakeholders.
+
+''Trade offs''
+
+* Acting fast reduces risk but may disrupt business and annoy people.  
+* Verifying and gathering evidence takes time but improves decisions.  
+* Over reacting hurts trust, while under reacting lets risk grow.
+
+Every action costs ''time'' and changes ''Risk, Evidence, and Trust''. Those scores drive your ''end of day outcome''.
+
+When you are ready, start your shift.
+
+[[Start your shift->Morning Triage]]
+
+
+:: Researcher Export {"position":"1575,300","size":"100,100"}
+<<include "HUD">>
+
+This passage summarizes your ''game state'' and key decisions so that a researcher (or instructor) can copy/paste the results.
+
+You can select this text and paste it into a spreadsheet or notes.
+
+----
+
+''Ending type:'' <<print $endingType>>
+
+''Final scores''
+
+* Risk: <<print $risk>>  
+* Evidence: <<print $evidence>>  
+* Trust: <<print $trust>>  
+* Time remaining: <<print $time>>
+
+''Scenarios completed''
+
+* VIP travel spoof handled: <<print $vipDone>>  
+* Public Wi-Fi case handled: <<print $wifiDone>>  
+* MFA push exhaustion handled: <<print $mfaDone>>  
+* Vendor bank change handled: <<print $vendorDone>>  
+* Phishing wave handled: <<print $waveDone>>  
+* Training side quest done: <<print $trainingDone>>  
+* War room briefing completed: <<print $warRoomDone>>
+
+''Decision log''
+
+<<if $decisions.length > 0>>
+	<<print "- " + $decisions.join("\n- ")>>
+<<else>>
+	(no decisions recorded)
+<</if>>
+
+[[Back to debrief->End of Day Debrief]]
+
+
+:: Sandbox Result {"position":"0,300","size":"100,100"}
+<<include "HUD">>
+
+You submit the suspicious attachment/executable to the sandbox.
+
+<<switch $case>>
+
+<<case "vendor">>
+The PDF attachment opens cleanly but contains a ''hidden link'' behind the "View Updated Instructions" button that points to the phishing vendor portal you just analyzed.
+
+The file isn’t malware, but it’s designed to ''drive credential theft''.
+
+
+
+<<case "wave">>
+The downloaded VPN "installer" performs:
+
+* System info collection  
+* Connection to a command-and-control server  
+* Attempted credential dumping
+
+Sandbox classifies it as ''likely malware''.
+
+
+
+<</switch>>
+
+[[Back to inspection->Inspect Headers, Links, Attachments]]
+
+
+:: Start {"position":"0,0","size":"100,100"}
+<div class="title-screen">
+	<h1>An SOC Workday: Phishing Edition</h1>
+	<p class="lead">
+		Take the analyst’s seat for one high-risk day of phishing, trade-offs, and incident response.
+	</p>
+
+	[[Begin simulation->Consent and Data Notice]]
+	[[About this simulation->About]]
+</div>
+
+
+:: Status Update Composer {"position":"800,300","size":"100,100"}
+<<include "HUD">>
+
+You decide to ''Communicate''. Crafting clear, concise updates affects how much leaders and partners trust your judgement.
+
+<<switch $statusContext>>
+
+<<case "vip">>
+You’re drafting a short note to the ''CFO and assistant'' about the spoofed travel email.
+
+<<link "Write a vague note: 'Ignore weird emails, we’re looking into something.'">>
+	<<set $time -= 2>>
+	<<set $trust -= 2>>
+	<<set $decisions.push("VIP comms: Vague message to CFO team.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Write a clear but calm update: include indicators, what actions you took, and what they should do next.">>
+	<<set $time -= 4>>
+	<<set $risk -= 2>>
+	<<set $evidence += 2>>
+	<<set $trust += 3>>
+	<<set $decisions.push("VIP comms: Clear, actionable summary to CFO team.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+<<case "wifi">>
+You’re sending an advisory to the ''employee and their manager''.
+
+<<link "Blame the user and scold them for using hotel Wi-Fi">>
+	<<set $time -= 2>>
+	<<set $trust -= 4>>
+	<<set $decisions.push("Wi-Fi comms: Blamed user harshly.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Send a supportive, educational note with concrete next steps">>
+	<<set $time -= 4>>
+	<<set $risk -= 1>>
+	<<set $evidence += 1>>
+	<<set $trust += 3>>
+	<<set $decisions.push("Wi-Fi comms: Educational, supportive guidance.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+<<case "mfa">>
+You’re updating the ''identity team and the engineer'' on the MFA attack.
+
+<<link "Send dense technical logs with no summary">>
+	<<set $time -= 3>>
+	<<set $evidence += 1>>
+	<<set $trust -= 1>>
+	<<set $decisions.push("MFA comms: Technical dump with little explanation.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Send a short executive summary plus links to detailed logs">>
+	<<set $time -= 4>>
+	<<set $risk -= 1>>
+	<<set $evidence += 2>>
+	<<set $trust += 3>>
+	<<set $decisions.push("MFA comms: Clear summary with technical backup.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+<<case "vendor">>
+You’re briefing ''Finance'' and the ''real vendor contact''.
+
+<<link "Simply say 'it’s fraud' without details">>
+	<<set $time -= 2>>
+	<<set $trust += 1>>
+	<<set $decisions.push("Vendor comms: Minimal detail, just 'it’s fraud'.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Explain indicators, remind them to verify bank changes out-of-band, and attach a short checklist">>
+	<<set $time -= 5>>
+	<<set $risk -= 2>>
+	<<set $evidence += 2>>
+	<<set $trust += 4>>
+	<<set $decisions.push("Vendor comms: Detailed guidance and checklist for bank changes.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+<<case "wave">>
+You’re composing an ''org-wide notice'' about the phishing wave.
+
+<<link "Over-alarm: say 'systems may be compromised' without evidence">>
+	<<set $time -= 3>>
+	<<set $risk += 1>>
+	<<set $trust -= 4>>
+	<<set $decisions.push("Wave comms: Over-alarming org-wide message.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Balanced message: explain the phish, show screenshots, and give clear report/delete instructions">>
+	<<set $time -= 6>>
+	<<set $risk -= 3>>
+	<<set $evidence += 2>>
+	<<set $trust += 5>>
+	<<set $decisions.push("Wave comms: Balanced, actionable org-wide notice.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+
+<</switch>>
+
+
+:: StoryInit {"position":"200,100","size":"100,100"}
+<<set $risk = 0>>
+<<set $evidence = 0>>
+<<set $trust = 70>>
+<<set $time = 100>>
+
+<<set $case = "">>
+<<set $statusContext = "">>
+<<set $consentGiven = false>>
+
+<<set $vipDone = false>>
+<<set $wifiDone = false>>
+<<set $mfaDone = false>>
+<<set $vendorDone = false>>
+<<set $waveDone = false>>
+<<set $trainingDone = false>>
+<<set $chatDone = false>>
+<<set $oauthDone = false>>
+<<set $warRoomDone = false>>
+
+<<set $endingType = "">>
+
+<<set $decisions = []>>
+
+
+:: Verify via Directory {"position":"400,300","size":"100,100"}
+<<include "HUD">>
+
+You choose to verify through ''trusted channels'' instead of using contact info in the suspicious message.
+
+<<switch $case>>
+
+<<case "vip">>
+You:
+
+* Call the CFO’s assistant using the ''corporate directory''.  
+* They confirm the CFO is traveling but ''hasn’t requested backup codes'' and is already signed into Okta on a trusted device.
+
+The email is ''not legitimate''.
+
+
+
+<<case "wifi">>
+You:
+
+* Call the employee using the number in the ''HR directory''.  
+* They confirm they used hotel Wi-Fi and saw a "slightly weird" login page.
+
+You advise them to ''stop using that network'' and be ready for a credential reset.
+
+
+
+<<case "mfa">>
+You:
+
+* Reach the engineer via internal chat and phone.  
+* They confirm they ''did not initiate'' any new logins.
+
+You treat this as ''likely account compromise attempt'', not user confusion.
+
+
+
+<<case "vendor">>
+You:
+
+* Pull the vendor contract and call the ''account manager phone number'' on file.  
+* They confirm ''no bank changes'' and say other customers reported similar spoofed emails.
+
+The email is clearly ''fraudulent''.
+
+
+
+<<case "wave">>
+You:
+
+* Check with the ''IT change calendar'' and speak to the VPN product owner.  
+* They confirm there is ''no planned VPN client rollout'' today.
+
+This confirms the campaign is ''unauthorized''.
+
+
+
+<<case "training">>
+You:
+
+* Chat with the awareness team in their usual channel.  
+* They confirm the training sim is separate from today’s actual incidents but are eager to see your findings.
+
+
+
+<</switch>>
+
+You’ve improved your confidence but spent time.
+
+[[Choose an action->Containment Actions]]
+
+
+:: War Room Briefing {"position":"1000,300","size":"100,100"}
+<<include "HUD">>
+
+By midday, Legal, Privacy, PR/Comms, and a few executives have joined a ''war room''. They ask for a concise assessment.
+
+You summarize:
+
+* VIP spoof against traveling executives  
+* Public Wi-Fi credential-harvest risk  
+* MFA push fatigue against a key engineer  
+* Fraudulent vendor bank-change attempt  
+* Ongoing phishing wave with malware payload
+
+They ask: ''"How should we frame this to the organization and possibly to external stakeholders?"''
+
+Choose the tone of the leaders’ message:
+
+<<link "Downplay it: 'Routine phishing noise, nothing serious to see here.'">>
+	<<set $time -= 5>>
+	<<set $risk += 5>>
+	<<set $trust += 2>>
+	<<set $warRoomDone = true>>
+	<<set $decisions.push("War room: Recommended downplaying the situation.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Balanced transparency: acknowledge elevated phishing, explain controls and what’s expected of employees, avoid speculating">>
+	<<set $time -= 8>>
+	<<set $risk -= 4>>
+	<<set $evidence += 2>>
+	<<set $trust += 6>>
+	<<set $warRoomDone = true>>
+	<<set $decisions.push("War room: Recommended balanced, transparent messaging.")>>
+	<<goto "Morning Triage">>
+<</link>>
+<br>
+
+<<link "Panic: recommend declaring a likely breach publicly before evidence is solid">>
+	<<set $time -= 6>>
+	<<set $evidence += 1>>
+	<<set $trust -= 6>>
+	<<set $warRoomDone = true>>
+	<<set $decisions.push("War room: Recommended premature public 'breach' messaging.")>>
+	<<goto "Morning Triage">>
+<</link>>
+
+
+:: StoryStylesheet [stylesheet]
+:root {
+  --bg: #050816;
+  --bg-card: #0b1020;
+  --bg-card-soft: #10162a;
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --accent: #4f46e5;
+  --accent-soft: rgba(79, 70, 229, 0.15);
+  --accent-alt: #f97316;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.85);
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+  --font-main: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+}
+
+html, body {
+  background: radial-gradient(circle at top, #111827 0, #020617 55%, #000 100%);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+#story {
+  width: 100%;
+  max-width: calc(100vw - 60px);
+  margin: 0.25rem auto 0.75rem;
+  padding: 0 1.25rem 1.25rem;
+  box-sizing: border-box;
+}
+#passages {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-soft);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(2,6,23,0.98));
+  border: 1px solid var(--border-soft);
+  padding: 1.5rem 2rem 1.7rem;
+  box-sizing: border-box;
+}
+
+#passages h1, #passages h2, #passages h3 {
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+#passages h1 {
+  font-size: 1.45rem;
+  margin: 0.25rem 0 0.35rem;
+}
+
+#passages h2 {
+  font-size: 1.2rem;
+  margin: 0.6rem 0 0.3rem;
+}
+
+#passages p {
+  line-height: 1.5;
+  margin: 0.25rem 0 0.5rem;
+  word-wrap: break-word;
+}
+
+#passages hr {
+  border: none;
+  border-top: 1px solid rgba(148,163,184,0.3);
+  margin: 1rem 0 1.2rem;
+}
+
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem 0.7rem;
+  padding: 0.45rem 0.8rem;
+  margin: -0.7rem -1.1rem 0.9rem;
+  border-radius: 16px;
+  background: radial-gradient(circle at top left, rgba(79,70,229,0.23), transparent 55%),
+              linear-gradient(120deg, rgba(15,23,42,0.95), rgba(15,23,42,0.86));
+  border: 1px solid rgba(148,163,184,0.25);
+}
+
+.hud-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(249,250,251,0.85);
+}
+
+.hud-left span.icon {
+  font-size: 1.15rem;
+}
+
+.hud-right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  border: 1px solid rgba(148,163,184,0.4);
+  background: rgba(15,23,42,0.85);
+  color: var(--text-muted);
+}
+
+.pill strong {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.pill-time { border-color: rgba(59,130,246,0.7); }
+.pill-time strong { color: #60a5fa; }
+
+.pill-risk { border-color: rgba(239,68,68,0.7); }
+.pill-risk strong { color: #f87171; }
+
+.pill-evidence { border-color: rgba(52,211,153,0.7); }
+.pill-evidence strong { color: #6ee7b7; }
+
+.pill-trust { border-color: rgba(234,179,8,0.7); }
+.pill-trust strong { color: #facc15; }
+
+.title-screen {
+  text-align: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.title-screen h1 {
+  font-size: 1.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.title-screen p.lead {
+  color: var(--text-muted);
+  max-width: 36rem;
+  margin: 0.35rem auto 1.3rem;
+}
+
+#passages a.link-internal,
+#passages a.link-external {
+  display: block;
+  margin: 0.25rem 0;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  font-size: 0.96rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: radial-gradient(circle at top left, rgba(79,70,229,0.28), rgba(79,70,229,0.1));
+  color: #e5e7eb;
+  transition: background 140ms ease, transform 110ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+#passages a.link-internal:hover,
+#passages a.link-external:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(15,23,42,0.9);
+  border-color: rgba(129,140,248,0.8);
+  background: radial-gradient(circle at top left, rgba(79,70,229,0.45), rgba(15,23,42,0.95));
+}
+
+#passages a.link-internal:active,
+#passages a.link-external:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 0 4px 12px rgba(15,23,42,0.85);
+}
+
+#passages a.link-internal:focus-visible,
+#passages a.link-external:focus-visible {
+  outline: 2px solid rgba(129,140,248,0.9);
+  outline-offset: 2px;
+}
+
+a.choice-danger {
+  background: radial-gradient(circle at top left, rgba(220,38,38,0.3), rgba(127,29,29,0.9));
+  border-color: rgba(248,113,113,0.8);
+}
+a.choice-danger:hover {
+  background: radial-gradient(circle at top left, rgba(220,38,38,0.48), rgba(24,24,27,0.96));
+}
+
+a.choice-soft {
+  background: radial-gradient(circle at top left, rgba(55,65,81,0.3), rgba(15,23,42,0.96));
+}
+
+#passages blockquote {
+  border-left: 3px solid rgba(148,163,184,0.7);
+  margin: 0.4rem 0 0.8rem;
+  padding: 0.35rem 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+#passages ul {
+  padding-left: 1.1rem;
+  margin: 0.3rem 0 0.7rem;
+}
+#passages li {
+  margin: 0.2rem 0;
+}
+
+.debrief-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 0.55rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.metric-card {
+  border-radius: 14px;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-card-soft);
+  border: 1px solid var(--border-soft);
+  font-size: 0.9rem;
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+}
+
+.metric-value {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 0.1rem;
+}
+
+.metric-risk .metric-value { color: #f87171; }
+.metric-evidence .metric-value { color: #6ee7b7; }
+.metric-trust .metric-value { color: #facc15; }
+.metric-time .metric-value { color: #60a5fa; }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: rgba(31,41,55,0.8);
+  border: 1px solid rgba(75,85,99,0.8);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+}
+
+#passages img {
+  max-width: 100%;
+  max-height: calc(100vh - 260px);
+  height: auto;
+  display: block;
+  margin: 0.75rem auto;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+@media (min-width: 1200px) {
+  #story {
+    max-width: calc(100vw - 60px);
+    padding: 0 1.5rem 1.5rem;
+  }
+  #passages {
+    padding: 1.5rem 2.1rem 1.7rem;
+  }
+}
+
+@media (max-width: 720px) {
+  #passages {
+    padding: 1.6rem 1.4rem 1.8rem;
+    border-radius: 0;
+  }
+  .hud {
+    margin: -0.8rem -0.8rem 1rem;
+  }
+}
